@@ -1,78 +1,88 @@
+"use client";
+
+import { useState } from "react";
 import { AnimatedText } from "@/components/animated-text";
-import { CopyText } from "@/components/copy-text";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@v1/ui/tooltip";
+import { Button } from "@v1/ui/button";
+import { Textarea } from "../../../../packages/ui/src/components/textarea";
+import { useToast, ToastProvider } from "../../../../packages/ui/src/components/use-toast";
 
 export default function Page() {
+  const { addToast } = useToast();
+  const [inputData, setInputData] = useState("");
+  const [anonymizedData, setAnonymizedData] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleAnonymize = async () => {
+    setIsLoading(true);
+    try {
+      // Replace this with your actual API call
+      const response = await fetch("/api/anonymize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: inputData }),
+      });
+      
+      if (!response.ok) throw new Error("Anonymization failed");
+      
+      const result = await response.json();
+      setAnonymizedData(result.anonymizedData);
+      addToast({
+        title: "Success",
+        description: "Your data has been anonymized.",
+      });
+    } catch (error) {
+      console.error("Anonymization error:", error);
+      addToast({
+        title: "Error",
+        description: "Failed to anonymize data. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <div className="h-screen w-screen flex flex-col items-center justify-center relative overflow-hidden">
-      <div className="absolute -top-[118px] inset-0 bg-[linear-gradient(to_right,#222_1px,transparent_1px),linear-gradient(to_bottom,#222_1px,transparent_1px)] bg-[size:4.5rem_2rem] -z-10 [transform:perspective(1000px)_rotateX(-63deg)] h-[80%] pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent pointer-events-none -z-10" />
+    <ToastProvider>
+      <div className="min-h-screen w-full flex flex-col items-center justify-center p-4">
+        <h1 className="font-departure text-4xl md:text-6xl text-center mb-8">
+          <AnimatedText text="Data Anonymizer" />
+        </h1>
 
-      <h1 className="font-departure text-[40px] md:text-[84px] relative z-10 text-center h-[120px] md:h-auto leading-tight">
-        <AnimatedText text="Production ready code" />
-      </h1>
+        <p className="text-center max-w-2xl mb-8">
+          Protect your sensitive data with our advanced anonymization tool. Simply paste your data below and let our AI-driven system anonymize it for you.
+        </p>
 
-      <p className="relative z-10 text-center max-w-[80%] mt-0 md:mt-4">
-        An open-source starter kit based on{" "}
-        <a href="https://midday.ai?utm_source=v1" className="underline">
-          Midday
-        </a>
-        .
-      </p>
+        <div className="w-full max-w-2xl space-y-4">
+          <Textarea
+            placeholder="Paste your data here..."
+            value={inputData}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setInputData(e.target.value)}
+            rows={10}
+            className="w-full"
+          />
 
-      {/* In process */}
-      {/* <span className="relative z-10 text-center text-[#878787] text-xs mt-2">
-        Security verified by Kenshū.
-      </span> */}
+          <Button 
+            onClick={handleAnonymize} 
+            disabled={!inputData || isLoading}
+            className="w-full"
+          >
+            {isLoading ? "Anonymizing..." : "Anonymize Data"}
+          </Button>
 
-      <div className="mt-10 mb-8">
-        <CopyText value="bunx degit midday-ai/v1 v1" />
+          {anonymizedData && (
+            <div className="mt-8">
+              <h2 className="text-xl font-semibold mb-2">Anonymized Data:</h2>
+              <Textarea
+                value={anonymizedData}
+                readOnly
+                rows={10}
+                className="w-full"
+              />
+            </div>
+          )}
+        </div>
       </div>
-
-      <TooltipProvider delayDuration={0}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <a
-              href="https://news.ycombinator.com/show"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <div className="flex items-center gap-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width={16}
-                  height={16}
-                  fill="none"
-                >
-                  <g clipPath="url(#a)">
-                    <path
-                      fill="#F60"
-                      d="M0 0v16h16V0H0Zm8.7 9.225v3.925H7.275V9.225L3.775 2.3h1.65L8 7.525 10.65 2.3h1.55L8.7 9.225Z"
-                    />
-                  </g>
-                  <defs>
-                    <clipPath id="a">
-                      <path fill="#fff" d="M0 0h16v16H0z" />
-                    </clipPath>
-                  </defs>
-                </svg>
-                <span className="text-sm">Live on Hacker News</span>
-              </div>
-            </a>
-          </TooltipTrigger>
-          <TooltipContent side="bottom" sideOffset={15} className="text-xs">
-            Show HN: V1 – An open-source starter kit for your next project
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-
-      <div className="absolute -bottom-[280px] inset-0 bg-[linear-gradient(to_right,#222_1px,transparent_1px),linear-gradient(to_bottom,#222_1px,transparent_1px)] bg-[size:4.5rem_2rem] -z-10 [transform:perspective(560px)_rotateX(63deg)] pointer-events-none" />
-      <div className="absolute w-full bottom-[100px] h-1/2  bg-gradient-to-b from-background to-transparent pointer-events-none -z-10" />
-    </div>
+    </ToastProvider>
   );
 }

@@ -1,4 +1,9 @@
-export default function Layout({ children }: { children: React.ReactNode }) {
-  // This is where your authenticated app lives, add a sidebar, header etc.
-  return children;
+import { ToastProvider } from "../../../../../../packages/ui/src/components/use-toast";
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <ToastProvider>{children}</ToastProvider>;
 }

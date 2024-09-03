@@ -28,6 +28,29 @@ app.get('/api/user/:id', async (req: Request, res: Response) => {
   res.status(200).json(deanonymizedData);
 });
 
+// Add new route for anonymization
+app.post('/api/anonymize', async (req: Request, res: Response) => {
+  console.log('Received request to /api/anonymize');
+  try {
+    console.log('Request body:', req.body);
+    const { data } = req.body;
+    if (!data) {
+      console.log('No data provided in request body');
+      return res.status(400).json({ error: 'Data is required' });
+    }
+    
+    console.log('Attempting to anonymize data');
+    const anonymizedData = anonymizeData(data);
+    console.log('Data anonymized successfully');
+    
+    console.log('Sending response');
+    res.status(200).json({ anonymizedData });
+  } catch (error) {
+    console.error('Anonymization error:', error);
+    res.status(500).json({ error: 'Anonymization failed' });
+  }
+});
+
 export async function fetchUserData(userId: string) {
   const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_KEY!);
   const { data, error } = await supabase
@@ -39,3 +62,5 @@ export async function fetchUserData(userId: string) {
   if (error) throw error;
   return data;
 }
+
+export { app };
