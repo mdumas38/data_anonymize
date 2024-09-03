@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { anonymizeData, deanonymizeData } from '@/packages/utils/anonymization';
+import { anonymizeData, deanonymizeData } from '@/packages/data-anonymizer/src/anonymizer';
 import { createClient } from '@supabase/supabase-js';
 
 const app = express();

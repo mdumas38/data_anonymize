@@ -1,4 +1,4 @@
-import { anonymizeData, deanonymizeData } from '../../utils/anonymization';
+import { anonymizeData, deanonymizeData } from '../../data-anonymizer/src/anonymizer';
 import { client } from "./index";
 
 export async function setKVData(key: string, value: any) {
