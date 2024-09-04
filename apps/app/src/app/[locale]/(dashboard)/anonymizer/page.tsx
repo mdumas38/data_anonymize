@@ -5,7 +5,6 @@ import { AnimatedText } from "../../../../../../web/src/components/animated-text
 import { Button } from "@v1/ui/button";
 import { Textarea } from "../../../../../../../packages/ui/src/components/textarea";
 import { useToast } from "../../../../../../../packages/ui/src/components/use-toast";
-import Link from "next/link";
 
 export default function Page() {
   const { addToast } = useToast();
@@ -14,26 +13,34 @@ export default function Page() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleAnonymize = async () => {
+    console.log("Starting anonymization process");
     setIsLoading(true);
     try {
       // Attempt to parse the input as JSON
       let dataToAnonymize;
       try {
         dataToAnonymize = JSON.parse(inputData);
+        console.log("Successfully parsed input as JSON:", dataToAnonymize);
       } catch {
         // If parsing fails, treat it as a plain string
         dataToAnonymize = inputData;
+        console.log("Failed to parse as JSON, treating as plain string:", dataToAnonymize);
       }
 
+      console.log("Sending request to anonymize data");
       const response = await fetch("/api/anonymize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ data: dataToAnonymize }),
       });
       
-      if (!response.ok) throw new Error("Anonymization failed");
+      if (!response.ok) {
+        console.error("Anonymization request failed:", response.status, response.statusText);
+        throw new Error("Anonymization failed");
+      }
       
       const result = await response.json();
+      console.log("Received anonymized data:", result);
       setAnonymizedData(JSON.stringify(result.anonymizedData, null, 2));
       addToast({
         title: "Success",
@@ -48,6 +55,7 @@ export default function Page() {
       });
     } finally {
       setIsLoading(false);
+      console.log("Anonymization process completed");
     }
   };
 
@@ -65,7 +73,10 @@ export default function Page() {
         <Textarea
           placeholder="Paste your data here..."
           value={inputData}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setInputData(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+            console.log("Input data changed:", e.target.value);
+            setInputData(e.target.value);
+          }}
           rows={10}
           className="w-full"
         />

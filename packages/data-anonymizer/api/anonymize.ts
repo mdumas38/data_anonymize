@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { anonymizeData } from '@/packages/data-anonymizer/src/anonymizer';
+import { anonymizeData } from '../src/anonymizer';
 
 export async function POST(request: Request) {
   const body = await request.json();

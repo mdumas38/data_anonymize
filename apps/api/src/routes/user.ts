@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { anonymizeData, deanonymizeData } from '@/packages/data-anonymizer/src/anonymizer';
+import { anonymizeData, deanonymizeData } from '../../../../packages/data-anonymizer/src/anonymizer';
 import { createClient } from '@supabase/supabase-js';
 
 const app = express();
@@ -9,8 +9,18 @@ app.post('/api/user', async (req: Request, res: Response) => {
   const userData = req.body;
   const anonymizedData = anonymizeData(userData);
   
-  // Store anonymizedData in database
+// Store anonymizedData in database
+const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_KEY!);
+const { data, error } = await supabase
+  .from('users')
+  .insert([
+    { id: anonymizedData.id, data: anonymizedData }
+  ]);
   
+  if (error) {
+    console.error('Error storing user data:', error);
+    return res.status(500).json({ error: 'Error storing user data' });
+  }
   res.status(200).json({ message: 'User data stored successfully' });
 });
 
@@ -30,20 +40,13 @@ app.get('/api/user/:id', async (req: Request, res: Response) => {
 
 // Add new route for anonymization
 app.post('/api/anonymize', async (req: Request, res: Response) => {
-  console.log('Received request to /api/anonymize');
   try {
-    console.log('Request body:', req.body);
     const { data } = req.body;
     if (!data) {
-      console.log('No data provided in request body');
       return res.status(400).json({ error: 'Data is required' });
     }
     
-    console.log('Attempting to anonymize data');
     const anonymizedData = anonymizeData(data);
-    console.log('Data anonymized successfully');
-    
-    console.log('Sending response');
     res.status(200).json({ anonymizedData });
   } catch (error) {
     console.error('Anonymization error:', error);
